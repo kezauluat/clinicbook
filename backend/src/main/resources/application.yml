@@ -1,0 +1,65 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: clinicbook
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/clinicbook
+    username: clinic
+    password: clinic123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  mongodb:
+    uri: mongodb://localhost:27017/clinicbook
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/clinicbook
+      auto-index-creation: true
+    redis:
+      host: localhost
+      port: 6379
+
+  cache:
+    type: redis
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: clinic
+    password: clinic123
+
+  mail:
+    host: localhost
+    port: 1025
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:change-me}
+            client-secret: ${GOOGLE_CLIENT_SECRET:change-me}
+            scope: openid, profile, email
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:clinicbook-dev-secret-key-change-me-in-production-2026}
+    access-expiration-ms: 900000
+    refresh-expiration-days: 7
+  frontend-url: http://localhost:5173
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
