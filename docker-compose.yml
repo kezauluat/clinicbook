@@ -1,3 +1,5 @@
+# Infrastructure only:   docker compose up -d
+# Whole system:          docker compose --profile app up -d --build
 services:
   postgres:
     image: postgres:17
@@ -10,6 +12,11 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic -d clinicbook"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   mongo:
     image: mongo:7
@@ -34,6 +41,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   mailpit:
     image: axllent/mailpit
@@ -41,6 +53,48 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+
+  backend:
+    build: ./backend
+    container_name: clinic-backend
+    profiles: ["app"]
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
+      mailpit:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/clinicbook
+      SPRING_MONGODB_URI: mongodb://mongo:27017/clinicbook
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/clinicbook
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_MAIL_HOST: mailpit
+      APP_FRONTEND_URL: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-clinicbook-docker-secret-change-me-in-production-2026}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-change-me}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-change-me}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8080
+    container_name: clinic-frontend
+    profiles: ["app"]
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
 
 volumes:
   pgdata:
