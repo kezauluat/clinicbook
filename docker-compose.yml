@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: clinic-postgres
+    environment:
+      POSTGRES_DB: clinicbook
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: clinic123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:7
+    container_name: clinic-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:7
+    container_name: clinic-redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: clinic-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: clinic
+      RABBITMQ_DEFAULT_PASS: clinic123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: clinic-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  pgdata:
+  mongodata:
