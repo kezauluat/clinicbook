@@ -36,12 +36,21 @@ spring:
 
   cache:
     type: redis
+    redis:
+      time-to-live: 10m
 
   rabbitmq:
     host: localhost
     port: 5672
     username: clinic
     password: clinic123
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2s
 
   mail:
     host: localhost
