@@ -11,12 +11,17 @@ spring:
     password: clinic123
 
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+
+  sql:
+    init:
+      mode: always
 
   mongodb:
     uri: mongodb://localhost:27017/clinicbook
